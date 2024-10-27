@@ -1,0 +1,76 @@
+#include <stdio.h>
+#define MAX_PAGES 100
+#define MAX_FRAMES 10
+int findLRU(int time[], int n) {
+    int minimum = time[0], pos = 0;
+    for (int i = 1; i < n; i++) {
+        if (time[i] < minimum) {
+            minimum = time[i];
+            pos = i;
+        }
+    }
+    return pos;
+}
+void LRUPageReplacement(int pages[], int numPages, int frames[], int numFrames) {
+    int time[MAX_FRAMES];
+    int flag1, flag2;
+    int faults = 0, count = 0;
+    for (int i = 0; i < numFrames; i++) {
+        frames[i] = -1;
+        time[i] = 0;
+    }
+    printf("\nPage Scheduling:\n");
+    for (int i = 0; i < numPages; i++) {
+        flag1 = flag2 = 0;
+        for (int j = 0; j < numFrames; j++) {
+            if (frames[j] == pages[i]) {
+                count++;
+                time[j] = count; 
+                flag1 = flag2 = 1;
+                break;
+            }
+        }
+        if (flag1 == 0) {
+            for (int j = 0; j < numFrames; j++) {
+                if (frames[j] == -1) {
+                    faults++;
+                    frames[j] = pages[i];
+                    count++;
+                    time[j] = count;
+                    flag2 = 1;
+                    break;
+                }
+            }
+        }
+        if (flag2 == 0) {
+            int pos = findLRU(time, numFrames);
+            frames[pos] = pages[i];
+            count++;
+            time[pos] = count;
+            faults++;
+        }
+        printf("Page %d: ", pages[i]);
+        for (int j = 0; j < numFrames; j++) {
+            if (frames[j] != -1)
+                printf("%d ", frames[j]);
+            else
+                printf("- ");
+        }
+        printf("\n");
+    }
+    printf("\nTotal Page Faults = %d\n", faults);
+}
+int main() {
+    int numFrames;
+    int pages[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2};
+    int numPages = sizeof(pages) / sizeof(pages[0]);
+    int frames[MAX_FRAMES];
+    printf("Enter the number of memory frames: ");
+    scanf("%d", &numFrames);
+    if (numFrames > MAX_FRAMES) {
+        printf("Error: Maximum frame limit exceeded.\n");
+        return 1;
+    }
+    LRUPageReplacement(pages, numPages, frames, numFrames);
+    return 0;
+}
